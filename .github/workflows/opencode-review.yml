@@ -1,0 +1,48 @@
+name: opencode-review
+
+# Preliminary automated review of pull requests via OpenCode.
+#
+# This is a first-pass filter only: findings are posted as PR comments.
+# Final review and merge decisions belong to the human reviewer, supported by the
+# full review report produced by the reviewer agent (command /review).
+#
+# Setup:
+# 1. Store your provider API key as the ANTHROPIC_API_KEY repo secret
+#    (or adapt the `env` block and `model` if you use another provider).
+# 2. Set `model` (below) to any model your provider offers. This is a standalone
+#    workflow input and is independent of the agent model_tiers in conductor.yaml.
+#
+# Note: pull_request events from forked repositories do not get access to secrets.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Run OpenCode review
+        uses: anomalyco/opencode/github@latest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: anthropic/claude-sonnet-4-20250514
+          use_github_token: true
+          prompt: |
+            Perform a preliminary review of this pull request.
+            - Check whether the changes match the requirements and ADR(s) referenced in the PR description.
+            - Check acceptance criteria coverage against the linked test report, if present.
+            - Flag deviations from the specification, scope creep, and missing validation, citing file and line.
+            You are a preliminary filter only. Post findings as PR comments.
+            Never approve, merge, or make formal review decisions - those belong to the human reviewer.

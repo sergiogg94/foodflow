@@ -1,0 +1,42 @@
+name: ci-baseline
+
+# Baseline CI scaffold installed by the conductor framework.
+# Replace the placeholder job with this project's real pipeline:
+#   install dependencies -> lint -> typecheck -> test
+#
+# Examples to adapt:
+#
+#   Python:
+#     - uses: actions/setup-python@v5
+#       with:
+#         python-version-file: .python-version
+#     - run: pip install -e . && ruff check . && pytest
+#
+#   Node:
+#     - uses: actions/setup-node@v4
+#       with:
+#         node-version-file: .node-version
+#     - run: npm ci && npm run lint && npm test
+#
+# The devops agent can customize this file for you: assign it an infrastructure task.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  baseline:
+    name: Baseline checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Scaffold notice
+        run: |
+          echo "ci-baseline is a scaffold installed by the conductor framework."
+          echo "This job intentionally does nothing yet."
+          echo "Customize it with this project's real checks (see comments in this file)."
