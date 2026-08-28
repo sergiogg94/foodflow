@@ -4,13 +4,13 @@
 **Project:** FoodFlow  
 **Requested by:** human  
 **Discovery:** `docs/discovery.md`  
-**Status:** 🟡 pending approval
+**Status:** ✅ approved
 
 ---
 
 ## Scope summary
 
-A webapp where two people share a single recipe base (recipe name + ingredient names only, ingredients optional), build one or more flexible meal plans as lists of meals (not strict day-by-day slot assignment), keep a history of plans, and automatically receive a deduplicated shopping list derived from a plan. The app runs as a Docker container on the user's homeserver, accessible within the local network with no authentication, and is designed mobile-first because the phone browser is the primary device of use.
+A webapp where two people share a single recipe base (recipe name + ingredient names only, ingredients optional), build one or more flexible meal plans as lists of meals (not strict day-by-day slot assignment), keep a history of plans, and automatically receive a deduplicated shopping list derived from one or more selected plans. The app runs as a Docker container on the user's homeserver, accessible within the local network with no authentication, and is designed mobile-first because the phone browser is the primary device of use.
 
 ---
 
@@ -21,7 +21,7 @@ A webapp where two people share a single recipe base (recipe name + ingredient n
 3. **Meal plan creation** — Create multiple meal plans. Each plan is a flexible list of meals (recipes selected from the recipe base) that can grow as needed; it is not a strict day-by-day slot assignment. Plans can coexist and are kept in a history.
 4. **Meal plan editing** — Add or remove meals within a plan. View any plan (current or historical) at any time.
 5. **"No ingredients" tag** — When a recipe with no ingredients is included in a plan, the plan view marks it with a label/tag such as "no ingredients".
-6. **Shopping list generation** — From a selected plan, produce a flat list of ingredient names. Ingredients that appear in multiple recipes appear only once in the list. The list updates automatically when the plan changes.
+6. **Shopping list generation** — From one or more selected plans, produce a flat list of ingredient names. Ingredients that appear in multiple recipes appear only once in the list. The list updates automatically when the plans change.
 7. **Concurrent shared access** — Two users access the same data simultaneously without authentication. Both see the same recipe base and the same plans.
 8. **Docker deployment** — The application runs as a docker-compose stack on the user's homeserver, accessible within the local network via browser.
 
@@ -67,7 +67,7 @@ Create a new meal plan as a flexible list of meals (recipes selected from the re
 Modify a plan by adding or removing meals from its list. The plan is always visible in its current state. Past plans remain available in the history and are not overwritten by creating or editing another plan.
 
 **FR-8 — Generate shopping list**  
-From a selected plan, produce a deduplicated flat list of ingredient names. If the plan has no recipes, or all its recipes have no ingredients, the shopping list is empty. The list reflects the plan in real time as it is edited.
+From one or more selected plans, produce a deduplicated flat list of ingredient names. The user selects which plan(s) the shopping list is generated for. If the selected plans have no recipes, or all their recipes have no ingredients, the shopping list is empty. The list reflects the selected plans in real time as they are edited.
 
 **FR-9 — Delete meal plan**  
 Remove a plan. The plan is no longer shown in the active list or history. Recipes remain in the recipe base.
@@ -142,6 +142,7 @@ And the recipe "Caesar Salad" still exists in the recipe base.
 - **Recipe with no ingredients** — A recipe may be saved with an empty ingredient list. Such a recipe contributes nothing to the shopping list and is tagged "no ingredients" in the plan view.
 - **Duplicate ingredient names within a recipe** — If the user enters the same ingredient name twice in a single recipe (e.g., ["cheese", "cheese"]), the system stores them as provided. The shopping list deduplicates across all recipes.
 - **Plan with no meals** — A plan may have an empty meal list (e.g., created but not yet filled). The shopping list is empty until meals are added.
+- **Shopping list from multiple plans** — The user selects one or more plans to generate the shopping list. Ingredients are aggregated and deduplicated across all selected plans. If the same ingredient appears in recipes across different selected plans, it appears only once in the list.
 - **Editing a recipe that is in a plan** — Changes to a recipe's ingredient list (e.g., removing or adding ingredients) immediately affect the shopping list of every plan that includes it.
 - **Deleting a recipe that is in a plan** — Deleting a recipe removes it from every plan that includes it, and its ingredients no longer appear in those plans' shopping lists.
 - **Concurrent recipe edits** — Two users editing the same recipe simultaneously: the last change wins (decision by the human).
@@ -169,6 +170,6 @@ None — planning owns item creation and state.
 
 ---
 
-**Approved by:** ________________  
-**Approval date:** ________________  
+**Approved by:** human  
+**Approval date:** 2026-08-28  
 **Next agent:** planner
