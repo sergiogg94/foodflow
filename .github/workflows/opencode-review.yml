@@ -33,6 +33,9 @@ jobs:
       - name: Run OpenCode review
         uses: anomalyco/opencode/github@latest
         env:
+          # CI is non-interactive: auto-approve permission requests so the agent
+          # does not hang on bash/tool prompts.
+          OPENCODE_PERMISSION: '{"*": "allow"}'
           GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
