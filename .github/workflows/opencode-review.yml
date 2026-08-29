@@ -7,8 +7,7 @@ name: opencode-review
 # full review report produced by the reviewer agent (command /review).
 #
 # Setup:
-# 1. Store your provider API key as the ANTHROPIC_API_KEY repo secret
-#    (or adapt the `env` block and `model` if you use another provider).
+# 1. Store your Google AI Studio API key as the GOOGLE_API_KEY repo secret.
 # 2. Set `model` (below) to any model your provider offers. This is a standalone
 #    workflow input and is independent of the agent model_tiers in conductor.yaml.
 #
@@ -34,10 +33,10 @@ jobs:
       - name: Run OpenCode review
         uses: anomalyco/opencode/github@latest
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: anthropic/claude-sonnet-4-20250514
+          model: google/gemini-2.5-pro
           use_github_token: true
           prompt: |
             Perform a preliminary review of this pull request.
