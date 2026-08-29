@@ -39,12 +39,15 @@ jobs:
           GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          agent: ci-review
           model: google/gemini-3.1-flash-lite
           use_github_token: true
           prompt: |
             Perform a preliminary review of this pull request.
-            - Check whether the changes match the requirements and ADR(s) referenced in the PR description.
+            - Read the approved artifacts referenced in the PR description: docs/requirements.md, the ADRs in docs/adr/, and the test report in docs/tests/.
+            - Compare the PR changes against those artifacts.
             - Check acceptance criteria coverage against the linked test report, if present.
             - Flag deviations from the specification, scope creep, and missing validation, citing file and line.
-            You are a preliminary filter only. Post findings as PR comments.
+            You are a preliminary filter only. Return your findings as your final text response.
+            Do NOT run any commands (no bash, no gh, no git). Do NOT post comments yourself — the workflow posts your response automatically.
             Never approve, merge, or make formal review decisions - those belong to the human reviewer.
