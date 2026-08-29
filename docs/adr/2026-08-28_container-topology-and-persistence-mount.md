@@ -5,7 +5,7 @@
 **Requested by:** human  
 **Requirements:** `docs/requirements.md`  
 **Implementation plan:** `docs/implementation-plan.md`  
-**Status:** 🟡 pending approval  
+**Status:** ✅ approved  
 **Supersedes:** N/A  
 **Superseded by:** N/A
 
@@ -119,6 +119,6 @@ None — items affected by this ADR become eligible for `Ready` upon human appro
 
 ---
 
-**Approved by:** ________________  
-**Approval date:** ________________  
+**Approved by:** human  
+**Approval date:** 2026-08-28  
 **Next agent:** developer (+ tester in parallel)

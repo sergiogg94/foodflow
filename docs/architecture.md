@@ -5,7 +5,7 @@
 **Requested by:** human  
 **Requirements:** `docs/requirements.md` (✅ approved)  
 **Implementation plan:** `docs/implementation-plan.md` (✅ approved)  
-**Status:** 🟡 pending approval
+**Status:** ✅ approved
 
 ---
 
@@ -93,10 +93,10 @@ None blocking. The four `[requires architecture]` tasks are resolved by the ADRs
 
 | ADR | Title | Status | Date |
 |---|---|---|---|
-| ADR-1 | Backend project layout and SQLite schema | 🟡 pending approval | 2026-08-28 |
-| ADR-2 | Frontend tooling and API integration | 🟡 pending approval | 2026-08-28 |
-| ADR-3 | Container topology and persistence mount | 🟡 pending approval | 2026-08-28 |
-| ADR-4 | Concurrency mechanism (last change wins) | 🟡 pending approval | 2026-08-28 |
+| ADR-1 | Backend project layout and SQLite schema | ✅ approved | 2026-08-28 |
+| ADR-2 | Frontend tooling and API integration | ✅ approved | 2026-08-28 |
+| ADR-3 | Container topology and persistence mount | ✅ approved | 2026-08-28 |
+| ADR-4 | Concurrency mechanism (last change wins) | ✅ approved | 2026-08-28 |
 
 ---
 
@@ -104,10 +104,10 @@ None blocking. The four `[requires architecture]` tasks are resolved by the ADRs
 
 | ADR | Title | Status | Date |
 |---|---|---|---|
-| ADR-1 | Backend project layout and SQLite schema | 🟡 pending approval | 2026-08-28 |
-| ADR-2 | Frontend tooling and API integration | 🟡 pending approval | 2026-08-28 |
-| ADR-3 | Container topology and persistence mount | 🟡 pending approval | 2026-08-28 |
-| ADR-4 | Concurrency mechanism (last change wins) | 🟡 pending approval | 2026-08-28 |
+| ADR-1 | Backend project layout and SQLite schema | ✅ approved | 2026-08-28 |
+| ADR-2 | Frontend tooling and API integration | ✅ approved | 2026-08-28 |
+| ADR-3 | Container topology and persistence mount | ✅ approved | 2026-08-28 |
+| ADR-4 | Concurrency mechanism (last change wins) | ✅ approved | 2026-08-28 |
 
 ---
 
@@ -117,6 +117,6 @@ None — items affected by these ADRs become eligible for `Ready` upon human app
 
 ---
 
-**Approved by:** ________________  
-**Approval date:** ________________  
+**Approved by:** human  
+**Approval date:** 2026-08-28  
 **Next agent:** developer (+ tester in parallel)
