@@ -1,0 +1,271 @@
+/* FoodFlow global styles — mobile-first, plain CSS (ADR-2 guard rail:
+   no CSS framework or component library). */
+
+:root {
+  --color-bg: #f7f7f5;
+  --color-surface: #ffffff;
+  --color-text: #1f2933;
+  --color-text-muted: #6b7280;
+  --color-primary: #2f6f4f;
+  --color-danger: #b3261e;
+  --color-border: #e5e7eb;
+  --radius: 8px;
+  --space: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space);
+}
+
+.app-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: var(--space);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.app-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-button {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.nav-button.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.view h2 {
+  margin: 0 0 var(--space);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space);
+  margin-bottom: var(--space);
+}
+
+.card h3 {
+  margin: 0 0 12px;
+}
+
+.card h4 {
+  margin: 16px 0 8px;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="search"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+.button-primary,
+.button-secondary,
+.button-danger {
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.button-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.button-danger {
+  background: var(--color-danger);
+  color: #ffffff;
+}
+
+.error {
+  color: var(--color-danger);
+  background: #fdecea;
+  border: 1px solid #f5c6c2;
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+}
+
+.recipe-list,
+.plan-list,
+.meal-list,
+.shopping-list,
+.plan-picker,
+.recipe-picker {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recipe-item,
+.plan-item,
+.meal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recipe-item:last-child,
+.plan-item:last-child,
+.meal-item:last-child {
+  border-bottom: none;
+}
+
+.recipe-info,
+.meal-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-count,
+.plan-count {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.recipe-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-block;
+  background: #eef2f0;
+  color: var(--color-text-muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ingredient-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ingredient-row input {
+  flex: 1;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.plan-select {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-select.active .plan-name {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.recipe-picker-item,
+.plan-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  padding: 6px 0;
+}
+
+/* Tablet and desktop: scale up gracefully from the mobile layout (NFR-5). */
+@media (min-width: 768px) {
+  .app {
+    max-width: 900px;
+  }
+
+  .app-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-nav {
+    gap: 12px;
+  }
+
+  .nav-button {
+    flex: none;
+    min-width: 120px;
+  }
+}
