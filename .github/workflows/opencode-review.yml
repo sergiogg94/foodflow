@@ -7,8 +7,7 @@ name: opencode-review
 # full review report produced by the reviewer agent (command /review).
 #
 # Setup:
-# 1. Store your provider API key as the ANTHROPIC_API_KEY repo secret
-#    (or adapt the `env` block and `model` if you use another provider).
+# 1. Store your Google AI Studio API key as the GOOGLE_API_KEY repo secret.
 # 2. Set `model` (below) to any model your provider offers. This is a standalone
 #    workflow input and is independent of the agent model_tiers in conductor.yaml.
 #
@@ -34,15 +33,21 @@ jobs:
       - name: Run OpenCode review
         uses: anomalyco/opencode/github@latest
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # CI is non-interactive: auto-approve permission requests so the agent
+          # does not hang on bash/tool prompts.
+          OPENCODE_PERMISSION: '{"*": "allow"}'
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: anthropic/claude-sonnet-4-20250514
+          agent: ci-review
+          model: google/gemini-3.1-flash-lite
           use_github_token: true
           prompt: |
             Perform a preliminary review of this pull request.
-            - Check whether the changes match the requirements and ADR(s) referenced in the PR description.
+            - Read the approved artifacts referenced in the PR description: docs/requirements.md, the ADRs in docs/adr/, and the test report in docs/tests/.
+            - Compare the PR changes against those artifacts.
             - Check acceptance criteria coverage against the linked test report, if present.
             - Flag deviations from the specification, scope creep, and missing validation, citing file and line.
-            You are a preliminary filter only. Post findings as PR comments.
+            You are a preliminary filter only. Return your findings as your final text response.
+            Do NOT run any commands (no bash, no gh, no git). Do NOT post comments yourself — the workflow posts your response automatically.
             Never approve, merge, or make formal review decisions - those belong to the human reviewer.
