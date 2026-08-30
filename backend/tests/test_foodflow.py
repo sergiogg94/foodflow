@@ -11,8 +11,6 @@ Run from the repository root: `python -m pytest backend/tests`.
 
 from sqlalchemy import text
 
-from app.db import engine
-
 
 def create_recipe(client, name, ingredients=None):
     resp = client.post(
@@ -273,7 +271,11 @@ def test_validation_empty_plan_name(client):
 
 
 def test_four_table_schema(client):
-    with engine.connect() as conn:
+    # The client fixture re-imports app.db against the isolated temp DB, so
+    # import it here (not at module level) to get the per-test engine.
+    from app import db
+
+    with db.engine.connect() as conn:
         tables = set(
             conn.execute(
                 text("SELECT name FROM sqlite_master WHERE type='table'")
@@ -283,7 +285,11 @@ def test_four_table_schema(client):
 
 
 def test_wal_and_busy_timeout_pragmas(client):
-    with engine.connect() as conn:
+    # Same as test_four_table_schema: import app.db inside the test so the
+    # engine is bound to the per-test isolated DB, not the collection-time one.
+    from app import db
+
+    with db.engine.connect() as conn:
         journal_mode = conn.execute(text("PRAGMA journal_mode")).scalar()
         busy_timeout = conn.execute(text("PRAGMA busy_timeout")).scalar()
         foreign_keys = conn.execute(text("PRAGMA foreign_keys")).scalar()
@@ -305,19 +311,25 @@ def test_remove_meal_ids_uses_recipe_ids(client):
     assert [m["recipe_id"] for m in resp.json()["meals"]] == [r2["id"]]
 
 
-def test_remove_meal_ids_removes_all_occurrences(client):
+def test_remove_meal_ids_removes_single_meal(client):
     # ADR-5: a recipe appears at most once per plan, so removing a recipe id
-    # removes the single meal; re-adding the same recipe is silently deduped.
+    # removes that single meal; the recipe can still exist in other plans.
     recipe = create_recipe(client, "Pasta", ["pasta"])
     plan = create_plan(client, "Week")
+    other_plan = create_plan(client, "Next week")
     client.patch(
         f"/plans/{plan['id']}", json={"add_meals": [recipe["id"], recipe["id"]]}
     )
     plan_read = client.get(f"/plans/{plan['id']}").json()
     assert len(plan_read["meals"]) == 1
+    client.patch(
+        f"/plans/{other_plan['id']}", json={"add_meals": [recipe["id"]]}
+    )
     resp = client.patch(f"/plans/{plan['id']}", json={"remove_meal_ids": [recipe["id"]]})
     assert resp.status_code == 200
     assert resp.json()["meals"] == []
+    other_read = client.get(f"/plans/{other_plan['id']}").json()
+    assert [m["recipe_id"] for m in other_read["meals"]] == [recipe["id"]]
 
 
 def test_shopping_list_sorted_alphabetically(client):
