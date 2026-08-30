@@ -61,6 +61,9 @@ def update_plan(
     if payload.name is not None:
         plan.name = payload.name
     if payload.add_meals is not None:
+        # ADR-5: each recipe appears at most once per plan. Ids already present
+        # in the plan are silently skipped; nonexistent recipes return 404.
+        existing_recipe_ids = {meal.recipe_id for meal in plan.meals}
         next_position = len(plan.meals)
         for recipe_id in payload.add_meals:
             recipe = db.get(Recipe, recipe_id)
@@ -68,7 +71,10 @@ def update_plan(
                 raise HTTPException(
                     status_code=404, detail=f"Recipe {recipe_id} not found"
                 )
+            if recipe_id in existing_recipe_ids:
+                continue
             plan.meals.append(PlanMeal(recipe_id=recipe_id, position=next_position))
+            existing_recipe_ids.add(recipe_id)
             next_position += 1
     if payload.remove_meal_ids is not None:
         remove_set = set(payload.remove_meal_ids)

@@ -1,16 +1,36 @@
 """Pydantic request/response schemas for the FoodFlow API."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class RecipeCreate(BaseModel):
     name: str = Field(..., min_length=1)
     ingredients: list[str] = []
 
+    @field_validator("name")
+    @classmethod
+    def name_not_blank(cls, value: str) -> str:
+        """Reject names that are empty or only whitespace (FR-1: non-empty).
+
+        The stored value is preserved as provided; only whitespace-only input
+        is rejected (review finding NB-1).
+        """
+        if value.strip() == "":
+            raise ValueError("Recipe name must not be blank")
+        return value
+
 
 class RecipeUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1)
     ingredients: list[str] | None = None
+
+    @field_validator("name")
+    @classmethod
+    def name_not_blank(cls, value: str | None) -> str | None:
+        """Reject names that are empty or only whitespace (FR-1: non-empty)."""
+        if value is not None and value.strip() == "":
+            raise ValueError("Recipe name must not be blank")
+        return value
 
 
 class RecipeRead(BaseModel):
