@@ -1,0 +1,5 @@
+# Test-only dependencies (NB-3). The production image installs
+# requirements.txt only; this file adds the pytest + TestClient toolchain.
+-r requirements.txt
+pytest==9.1.1
+httpx==0.28.1

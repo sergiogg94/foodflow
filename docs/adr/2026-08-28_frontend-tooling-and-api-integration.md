@@ -7,7 +7,7 @@
 **Implementation plan:** `docs/implementation-plan.md`  
 **Status:** ✅ approved  
 **Supersedes:** N/A  
-**Superseded by:** N/A
+**Superseded by:** ADR-5 (partially — the `updatePlan` contract semantics for `add_meals` and `remove_meal_ids`)
 
 ---
 

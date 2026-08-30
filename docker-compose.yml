@@ -1,0 +1,12 @@
+# FoodFlow — single docker-compose service (ADR-3).
+# The React app is built at image build time and served by FastAPI; the
+# SQLite database is persisted via the ./data bind mount.
+services:
+  foodflow:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
