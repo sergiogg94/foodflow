@@ -14,12 +14,23 @@ const NAV_ITEMS: { id: View; key: string }[] = [
 
 function AppShell() {
   const [view, setView] = useState<View>("recipes");
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>FoodFlow</h1>
+        <div className="app-header-top">
+          <h1>FoodFlow</h1>
+          <select
+            className="lang-selector"
+            value={lang}
+            onChange={(e) => setLang(e.target.value as "en" | "es")}
+            aria-label="Language"
+          >
+            <option value="en">English</option>
+            <option value="es">Espa&#241;ol</option>
+          </select>
+        </div>
         <nav className="app-nav">
           {NAV_ITEMS.map((item) => (
             <button
