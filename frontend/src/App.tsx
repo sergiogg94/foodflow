@@ -2,17 +2,19 @@ import { useState } from "react";
 import RecipesView from "./views/RecipesView";
 import PlansView from "./views/PlansView";
 import ShoppingListView from "./views/ShoppingListView";
+import { LanguageProvider, useLanguage, t } from "./i18n";
 
 type View = "recipes" | "plans" | "shopping";
 
-const NAV_ITEMS: { id: View; label: string }[] = [
-  { id: "recipes", label: "Recipes" },
-  { id: "plans", label: "Plans" },
-  { id: "shopping", label: "Shopping" },
+const NAV_ITEMS: { id: View; key: string }[] = [
+  { id: "recipes", key: "nav.recipes" },
+  { id: "plans", key: "nav.plans" },
+  { id: "shopping", key: "nav.shopping" },
 ];
 
-export default function App() {
+function AppShell() {
   const [view, setView] = useState<View>("recipes");
+  const { lang } = useLanguage();
 
   return (
     <div className="app">
@@ -25,7 +27,7 @@ export default function App() {
               className={`nav-button${view === item.id ? " active" : ""}`}
               onClick={() => setView(item.id)}
             >
-              {item.label}
+              {t(lang, item.key)}
             </button>
           ))}
         </nav>
@@ -36,5 +38,13 @@ export default function App() {
         {view === "shopping" && <ShoppingListView />}
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppShell />
+    </LanguageProvider>
   );
 }
