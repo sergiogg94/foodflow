@@ -3,8 +3,10 @@ import type { FormEvent } from "react";
 import { createPlan, deletePlan, listPlans, updatePlan } from "../api/plans";
 import { listRecipes } from "../api/recipes";
 import type { Plan, RecipeSummary } from "../api/types";
+import { useLanguage, t, pluralize } from "../i18n";
 
 export default function PlansView() {
+  const { lang } = useLanguage();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
@@ -26,11 +28,11 @@ export default function PlansView() {
       setPlans(plansData);
       setRecipes(recipesData);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load plans");
+      setError(e instanceof Error ? e.message : t(lang, "plans.error_load"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     refresh();
@@ -46,19 +48,19 @@ export default function PlansView() {
       await refresh();
       setSelectedPlanId(plan.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create plan");
+      setError(e instanceof Error ? e.message : t(lang, "plans.error_create"));
     }
   };
 
   const handleDeletePlan = async (id: number, name: string) => {
-    if (!window.confirm(`Delete plan "${name}"?`)) return;
+    if (!window.confirm(t(lang, "plans.confirm_delete", { name }))) return;
     setError(null);
     try {
       await deletePlan(id);
       if (selectedPlanId === id) setSelectedPlanId(null);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to delete plan");
+      setError(e instanceof Error ? e.message : t(lang, "plans.error_delete"));
     }
   };
 
@@ -78,7 +80,7 @@ export default function PlansView() {
       setSelectedRecipeIds([]);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to add meals");
+      setError(e instanceof Error ? e.message : t(lang, "plans.error_add_meals"));
     }
   };
 
@@ -89,39 +91,39 @@ export default function PlansView() {
       await updatePlan(selectedPlan.id, { remove_meal_ids: [recipeId] });
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to remove meal");
+      setError(e instanceof Error ? e.message : t(lang, "plans.error_remove_meal"));
     }
   };
 
   return (
     <section className="view">
-      <h2>Plans</h2>
+      <h2>{t(lang, "plans.heading")}</h2>
       {error && <p className="error">{error}</p>}
 
       <form className="card" onSubmit={handleCreatePlan}>
-        <h3>New plan</h3>
+        <h3>{t(lang, "plans.new_plan")}</h3>
         <label>
-          Name
+          {t(lang, "plans.name_label")}
           <input
             type="text"
             value={newPlanName}
             onChange={(e) => setNewPlanName(e.target.value)}
-            placeholder="e.g. This week"
+            placeholder={t(lang, "plans.placeholder")}
             required
           />
         </label>
         <button type="submit" className="button-primary">
-          Create plan
+          {t(lang, "plans.create")}
         </button>
       </form>
 
-      {loading && <p>Loading…</p>}
+      {loading && <p>{t(lang, "plans.loading")}</p>}
 
       <div className="card">
-        <h3>All plans</h3>
+        <h3>{t(lang, "plans.all_plans")}</h3>
         {!loading && plans.length === 0 && (
           <p className="empty-state">
-            No plans yet. Create your first plan above.
+            {t(lang, "plans.empty_list")}
           </p>
         )}
         <ul className="plan-list">
@@ -133,14 +135,19 @@ export default function PlansView() {
               >
                 <span className="plan-name">{plan.name}</span>
                 <span className="plan-count">
-                  {plan.meals.length} meal{plan.meals.length === 1 ? "" : "s"}
+                  {plan.meals.length}{" "}
+                  {pluralize(
+                    plan.meals.length,
+                    t(lang, "plans.meal_singular"),
+                    t(lang, "plans.meal_plural"),
+                  )}
                 </span>
               </button>
               <button
                 className="button-danger"
                 onClick={() => handleDeletePlan(plan.id, plan.name)}
               >
-                Delete
+                {t(lang, "plans.delete")}
               </button>
             </li>
           ))}
@@ -151,7 +158,7 @@ export default function PlansView() {
         <div className="card">
           <h3>{selectedPlan.name}</h3>
           {selectedPlan.meals.length === 0 ? (
-            <p className="empty-state">This plan has no meals yet.</p>
+            <p className="empty-state">{t(lang, "plans.no_meals_yet")}</p>
           ) : (
             <ul className="meal-list">
               {selectedPlan.meals.map((meal, index) => (
@@ -159,14 +166,14 @@ export default function PlansView() {
                   <div className="meal-info">
                     <span className="meal-name">{meal.name}</span>
                     {meal.ingredient_count === 0 && (
-                      <span className="tag">no ingredients</span>
+                      <span className="tag">{t(lang, "plans.no_ingredients")}</span>
                     )}
                   </div>
                   <button
                     className="button-secondary"
                     onClick={() => handleRemoveMeal(meal.recipe_id)}
                   >
-                    Remove
+                    {t(lang, "plans.remove")}
                   </button>
                 </li>
               ))}
@@ -174,11 +181,10 @@ export default function PlansView() {
           )}
 
           <div className="add-meals">
-            <h4>Add meals</h4>
+            <h4>{t(lang, "plans.add_meals_heading")}</h4>
             {recipes.length === 0 ? (
               <p className="empty-state">
-                No recipes yet. Create recipes first, then add them to this
-                plan.
+                {t(lang, "plans.empty_recipes")}
               </p>
             ) : (
               <>
@@ -193,7 +199,7 @@ export default function PlansView() {
                         />
                         <span>{recipe.name}</span>
                         {recipe.ingredient_count === 0 && (
-                          <span className="tag">no ingredients</span>
+                          <span className="tag">{t(lang, "plans.no_ingredients")}</span>
                         )}
                       </label>
                     </li>
@@ -205,7 +211,7 @@ export default function PlansView() {
                   onClick={handleAddMeals}
                   disabled={selectedRecipeIds.length === 0}
                 >
-                  Add selected meals
+                  {t(lang, "plans.add_selected")}
                 </button>
               </>
             )}
