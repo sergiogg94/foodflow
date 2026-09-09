@@ -98,6 +98,7 @@ None blocking. The four `[requires architecture]` tasks are resolved by the ADRs
 | ADR-3 | Container topology and persistence mount | ✅ approved | 2026-08-28 |
 | ADR-4 | Concurrency mechanism (last change wins) | ✅ approved | 2026-08-28 |
 | ADR-5 | Recipe uniqueness per plan | 🔄 proposed | 2026-08-30 |
+| ADR-6 | Frontend i18n mechanism | ✅ approved | 2026-09-08 |
 
 ---
 
@@ -110,6 +111,7 @@ None blocking. The four `[requires architecture]` tasks are resolved by the ADRs
 | ADR-3 | Container topology and persistence mount | ✅ approved | 2026-08-28 |
 | ADR-4 | Concurrency mechanism (last change wins) | ✅ approved | 2026-08-28 |
 | ADR-5 | Recipe uniqueness per plan | 🔄 proposed | 2026-08-30 |
+| ADR-6 | Frontend i18n mechanism | ✅ approved | 2026-09-08 |
 
 ---
 

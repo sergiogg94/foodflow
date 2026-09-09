@@ -4,7 +4,7 @@
 **Project:** FoodFlow  
 **Requested by:** human  
 **Discovery:** `docs/discovery-language-switch.md`  
-**Status:** 🟡 pending approval
+**Status:** ✅ approved
 
 ---
 
@@ -138,6 +138,6 @@ None — planning owns item creation and state.
 
 ---
 
-**Approved by:** ________________  
-**Approval date:** ________________  
+**Approved by:** human  
+**Approval date:** 2026-09-04  
 **Next agent:** planner

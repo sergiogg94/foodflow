@@ -17,10 +17,19 @@ Decision and outcome log for FoodFlow, maintained by the orchestrator. Read befo
 - `docs/discovery-language-switch.md` updated: translated to English (per D-2), open questions resolved per D-1 (option (a), per-device persistence, English default). New assumption recorded: per-device persistence means local browser storage, not cross-device sync.
 - `docs/discovery-language-switch.md` — ✅ approved by human (2026-09-04).
 - `docs/requirements-language-switch.md` — created by scopper (English, 🟡 pending approval). 5 FR, 3 NFR, 6 AC, 8 edge cases, no open questions. Scoping choice flagged: selector placed in the app header (`frontend/src/App.tsx:19-32`).
+- `docs/requirements-language-switch.md` — ✅ approved by human (2026-09-04).
+- `docs/implementation-plan-language-switch.md` — created by planner (English, 🟡 pending approval). 6 tasks: T-1 i18n infrastructure [requires architecture], T-2 translation dictionaries, T-3 language selector, T-4/T-5/T-6 view strings. All P0, Area Frontend, Status Backlog.
+- `docs/implementation-plan-language-switch.md` — ✅ approved by human (2026-09-08).
+- `docs/adr/2026-09-08_frontend-i18n-mechanism.md` (ADR-6) — created by architect (English, 🟡 pending approval). Decision: hand-rolled React Context + `localStorage`; no new dependency; consistent with ADR-2 guard rails. `docs/architecture.md` updated with ADR-6 in both ADR tables (🔄 proposed).
+- `docs/adr/2026-09-08_frontend-i18n-mechanism.md` (ADR-6) — ✅ approved by human (2026-09-08).
+- Implementation (T-1..T-6) — developer completed on branch `feat/language-switch` (7 commits), PR #3 open against `main`. Build passes; backend tests 32 passed. Notes: `docs/notes/2026-09-08_language-switch-implementation.md` (no ADR deviations).
+- Test report — `docs/tests/2026-09-08_language-switch.md`: AC-1..AC-6 ✅ Pass (code inspection + build), 0 defects, gaps: no frontend test framework, no headless browser, DOM observation not done.
+- Review report — `docs/reviews/2026-09-08_language-switch_review.md`: verdict 🔄 Changes requested. Findings: B-1 (blocking — `TranslationKey` type in `translations.ts` instead of `types.ts`, dead code, ADR-6 file-structure deviation), NB-1 (untranslated `aria-label` in selector), NB-2 (ADR-6 status stale in `docs/architecture.md` — fixed by orchestrator), NB-3 (`t()` interpolation `$`-pattern edge case), P-1 (robust localStorage try/catch).
+- Re-review — human decided to fix only B-1 (move type to `types.ts`); developer commit `c09140b`. NB-1 and NB-3 left open by human decision. Re-review verdict: ✅ Approved (`docs/reviews/2026-09-08_language-switch_review.md`).
 - `AGENT_LOG.md` created at repo root (D-3).
 
 ### Pipeline state
 
-- Stage: scopper (new feature).
-- `docs/requirements-language-switch.md` — 🟡 pending human approval.
+- Stage: reviewer → awaiting human merge decision (new feature).
+- PR #3 (`feat/language-switch`) — open; review verdict ✅ Approved; B-1 resolved. Human must merge.
 - Previous delivery (T-1..T-10): merged to `main`; `docs/delivery-checklist.md` 🟡 pending human acceptance (independent of this feature).

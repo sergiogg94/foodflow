@@ -1,4 +1,10 @@
-# Delivery checklist: FoodFlow core implementation (T-1..T-10)
+# Delivery checklist: FoodFlow
+
+This document consolidates delivery status for all FoodFlow features.
+
+---
+
+# Delivery 1: Core implementation (T-1..T-10)
 
 **Date:** 2026-08-30  
 **Project:** FoodFlow  
@@ -76,7 +82,7 @@ Final state of every acceptance criterion, consolidating the test reports and th
 - `docs/delivery-checklist.md` — updated (this delivery).
 - `docs/architecture.md` — pending: ADR-5 rows still record "🔄 proposed" (NB-4).
 - `docs/adr/2026-08-30_recipe-uniqueness-per-plan.md` — pending: status field still "🔄 proposed" (NB-4).
-- `AGENT_LOG.md` — absent from the repository (framework-level observation, not a defect of this delivery).
+- `AGENT_LOG.md` — present at repo root (created during language-switch session, D-3).
 
 ---
 
@@ -85,7 +91,6 @@ Final state of every acceptance criterion, consolidating the test reports and th
 - **NB-4** — ADR-5 is recorded as "🔄 proposed" in `docs/adr/2026-08-30_recipe-uniqueness-per-plan.md:8` and in both `docs/architecture.md` ADR tables (`:100`, `:112`), although the human approved it. Documentation drift, not an implementation deviation; the implementation matches ADR-5 exactly. Fix is a separate follow-up (update the status fields); not changed silently here.
 - **NB-5** — no committed test asserts 422 for a malformed `add_meals`/`remove_meal_ids` payload (e.g., a string instead of `list[int]`). Behavior is correct (independently probed); coverage gap only.
 - **AC-1 / AC-4 / AC-5** — browser-based UI interaction unvalidated: the create → list → read flow, the "no ingredients" tag rendering, and the two-browser concurrent scenario require manual human confirmation in a real browser (mobile viewport).
-- **`AGENT_LOG.md` absent** — framework-level observation; the file is listed as required reading in `core-principles.md` step 4.
 
 ---
 
@@ -131,6 +136,153 @@ Per `github-projects-policy.md`: only the human marks items Done. This checklist
 
 ```text
 Upon human acceptance: move T-1..T-10 to Done — evidence: this delivery checklist + merged PR #1 (f830444) + merged PR #2 (64e4546)
+```
+
+---
+
+**Accepted by:** ________________ *(human)*  
+**Acceptance date:** ________________
+
+---
+
+# Delivery 2: Frontend language switch (T-1..T-6)
+
+**Date:** 2026-09-09  
+**Project:** FoodFlow  
+**Requested by:** human  
+**Tasks:** T-1..T-6  
+**Requirements:** `docs/requirements-language-switch.md` (✅ approved)  
+**Implementation plan:** `docs/implementation-plan-language-switch.md` (✅ approved)  
+**Architecture decision:** `docs/adr/2026-09-08_frontend-i18n-mechanism.md` — ADR-6 (✅ approved)  
+**Implementation notes:** `docs/notes/2026-09-08_language-switch-implementation.md`  
+**Test report:** `docs/tests/2026-09-08_language-switch.md`  
+**Review report:** `docs/reviews/2026-09-08_language-switch_review.md` (✅ approved)  
+**Branch:** `feat/language-switch`  
+**Pull request:** PR #3 (open)  
+**Status:** 🟡 pending human merge and acceptance
+
+---
+
+## Scope delivered
+
+- **Language selector (FR-1)** — **delivered**: dropdown in the app header (`frontend/src/App.tsx:26-32`), two options ("English" / "Español") labeled in their own language, visible on all three views. Selecting an option switches all UI strings immediately via React Context re-render.
+- **Persistence and default (FR-2)** — **delivered**: `localStorage["foodflow-lang"]` read on mount, write on set, default `"en"` when absent or invalid (`frontend/src/i18n/LanguageContext.tsx:8-16`). Per-device, survives page reloads and browser restarts.
+- **UI string translation (FR-3)** — **delivered**: all frontend UI strings across navigation, headings, labels, buttons, placeholders, empty states, loading text, fallback error messages, and the "no ingredients" tag are translated via `t()` function calls in `App.tsx`, `RecipesView.tsx`, `PlansView.tsx`, and `ShoppingListView.tsx`.
+- **Pluralization (FR-4)** — **delivered**: `pluralize()` helper (`LanguageContext.tsx:84-86`) with singular/plural pairs for ingredient and meal counts in both languages (`translations.ts:97-98,116-117`). Zero counts use the plural form per FR-4.
+- **Document lang attribute (FR-5)** — **delivered**: `document.documentElement.lang` synced on mount (`LanguageContext.tsx:38-41`) and on language change (`:35`). `frontend/index.html:2` starts with `lang="en"`.
+- **ADR-6 implementation** — **delivered**: hand-rolled React Context + `localStorage` i18n (`frontend/src/i18n/` — 4 files). No new npm dependencies. Consistent with ADR-2 guard rails. File structure matches ADR-6 exactly.
+- **No regression (NFR-2)** — **delivered**: all existing view behavior unchanged; only UI strings replaced with `t()` calls; `PlanMeal` and `Recipe` interfaces untouched; backend test suite passes (32 passed, 0 failed).
+
+---
+
+## Requirements reference
+
+Final state of every acceptance criterion, consolidating the test report and the review cross-check. Statuses: ✅ Pass · ⚠️ Needs manual check
+
+| AC | Final status | Evidence |
+|---|---|---|
+| AC-1 | ✅ Pass — selector rendering ⚠️ manual check | Code inspection: `LanguageContext.tsx:8-16` returns `"en"` when key absent/invalid; `App.tsx:30` renders `English` as first option. Browser rendering of default state needs manual confirmation. |
+| AC-2 | ✅ Pass — DOM interaction ⚠️ manual check | Code inspection: `LanguageContext.tsx:28-36` updates context, writes localStorage, sets `document.documentElement.lang`. DOM observation during interaction not performed. |
+| AC-3 | ✅ Pass | Code inspection: read on mount (`:10`), write on set (`:31`); stored preference restored on next load. |
+| AC-4 | ✅ Pass | Code inspection: `pluralize` at `:84-86`; Spanish pairs at `translations.ts:97-98,116-117`; call sites `RecipesView.tsx:195-199`, `PlansView.tsx:139-143`, `ShoppingListView.tsx:90-94`. Zero counts use plural form. |
+| AC-5 | ✅ Pass | Code inspection: user data (`recipe.name`, `plan.name`, `meal.name`, ingredient strings) rendered directly, never passed to `t()`. |
+| AC-6 | ✅ Pass | Same mechanism as AC-2: `setLang("en")` re-renders consumers with English output; `document.documentElement.lang` set to `"en"`. |
+
+---
+
+## Implementation reference
+
+- **Branch:** `feat/language-switch` (PR #3)
+- **Pull request:** PR #3 — Frontend language switch, open against `main`
+- **Commits:** 8 commits total — T-1..T-6 implementation, implementation notes commit, B-1 fix (`c09140b`)
+- **Files changed:** 10 files (4 new i18n files, 4 modified source files, 1 modified stylesheet, 1 implementation-notes doc) — verified via `git diff main...feat/language-switch`
+- **Build:** `npm run build` in `frontend/` — `tsc` clean (`strict: true`), Vite production build succeeds (158.87 kB JS, 3.48 kB CSS)
+- **No scope creep:** branch diff contains only T-1..T-6 files plus implementation notes
+
+---
+
+## Linked pull requests
+
+- **PR #3** — Frontend language switch (branch `feat/language-switch`), open. Review verdict: ✅ Approved.
+
+---
+
+## Review status
+
+- **Verdict:** ✅ Approved
+- **Blocking findings:** 0 — B-1 resolved and verified in re-review; NB-1 and NB-3 open by explicit human decision (non-blocking)
+- **Report:** `docs/reviews/2026-09-08_language-switch_review.md`
+
+| Finding | Status | Notes |
+|---|---|---|
+| B-1 — `TranslationKeys` type in `translations.ts` instead of `types.ts` | ✅ Resolved | Type moved to `frontend/src/i18n/types.ts:3-6` per ADR-6; `translations.ts` exports only dictionaries. Commit `c09140b`. |
+| NB-1 — `aria-label="Language"` hardcoded, not translated | 🟡 Open (human decision) | Non-blocking; human decided not to fix in this pass. |
+| NB-2 — ADR-6 status stale in `docs/architecture.md` | ✅ Resolved | Updated by orchestrator: ADR-6 → ✅ approved in both ADR tables. |
+| NB-3 — `t()` interpolation `$`-pattern edge case | 🟡 Open (human decision) | Non-blocking; human decided not to fix in this pass. Recipe names containing `$` may render incorrectly in `confirm_delete` dialogs. |
+| P-1 — robust `localStorage` try/catch | 🟢 Positive | Defensive handling goes beyond ADR-6 minimum. |
+
+---
+
+## Test status
+
+- **Results:** 32 passed · 0 failed · 0 skipped (backend test suite, no regression). Frontend: `tsc` strict clean, Vite build succeeds.
+- **AC coverage:** all 6 ACs verified by code inspection; no automated frontend test framework exists.
+- **Defects:** 0
+- **Test gaps:** no headless browser available — selector click behavior, reactive DOM re-render, `document.documentElement.lang` update during interaction, and mobile viewport rendering require manual human confirmation. Detail in `docs/tests/2026-09-08_language-switch.md`.
+
+---
+
+## Documentation status
+
+- `README.md` — updated: language switch feature documented in "What it does", "Stack", and "Documentation" sections.
+- `docs/delivery-checklist.md` — updated (this delivery).
+- `docs/requirements-language-switch.md` — ✅ approved.
+- `docs/implementation-plan-language-switch.md` — ✅ approved.
+- `docs/adr/2026-09-08_frontend-i18n-mechanism.md` (ADR-6) — ✅ approved.
+- `docs/architecture.md` — ADR-6 row updated to ✅ approved in both ADR tables.
+- `AGENT_LOG.md` — created during language-switch session (D-3).
+
+---
+
+## Open risks
+
+- **NB-1** — `aria-label="Language"` hardcoded in `App.tsx:28`, not translated when Spanish is selected. Non-blocking by human decision; follow-up if desired.
+- **NB-3** — `t()` interpolation uses string replacement instead of a replacer function; recipe/plan names containing `$`-pattern characters may render incorrectly in `confirm_delete` dialogs. Non-blocking by human decision; follow-up if desired.
+- **Browser validation** — all 6 ACs verified by code inspection only; no headless browser available. The human should exercise the selector in a real browser before final acceptance: switch to Spanish, verify all strings translate, reload, verify persistence, switch back to English, verify mobile layout.
+- **No automated frontend tests** — no test framework in `frontend/package.json`; the `t()`, `pluralize()`, `LanguageProvider`, and `useLanguage` functions cannot be exercised by automated tests without adding a test runner.
+
+---
+
+## Follow-up work
+
+- Address NB-1: add `nav.language` key to both dictionaries and use `aria-label={t(lang, "nav.language")}`.
+- Address NB-3: use a replacer function (`result.replace(regex, () => String(val))`) instead of a string replacement.
+- Add a frontend test framework (vitest or similar) and write unit tests for `t()`, `pluralize()`, `LanguageProvider`, and `useLanguage`.
+- Manual browser validation of selector interaction, mobile layout, and all three views in both languages (human).
+
+---
+
+## Final checklist
+
+- [x] Review verdict: ✅ Approved
+- [x] Zero 🔴 blocking findings unresolved
+- [ ] All ACs ✅ or explicitly accepted as ⚠️ manual checks — AC-1/AC-2 selector rendering and DOM interaction need manual confirmation
+- [x] Test suite passes; no regression (32 passed, 0 failed)
+- [x] Build passes (`tsc` strict clean, Vite production build succeeds)
+- [x] Documentation updated
+- [x] Branch diff contains only T-1..T-6 scope (10 files, no creep)
+- [ ] Human merges PR #3
+- [ ] Human exercises the selector in a real browser
+- [ ] Human accepts the delivery
+
+---
+
+## Board updates
+
+Per `github-projects-policy.md`: only the human marks items Done. This checklist proposes; the human disposes.
+
+```text
+Upon human acceptance: move T-1..T-6 to Done — evidence: this delivery checklist + PR #3 (branch feat/language-switch, review ✅ Approved, B-1 resolved)
 ```
 
 ---

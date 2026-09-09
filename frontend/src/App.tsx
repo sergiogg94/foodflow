@@ -2,22 +2,35 @@ import { useState } from "react";
 import RecipesView from "./views/RecipesView";
 import PlansView from "./views/PlansView";
 import ShoppingListView from "./views/ShoppingListView";
+import { LanguageProvider, useLanguage, t } from "./i18n";
 
 type View = "recipes" | "plans" | "shopping";
 
-const NAV_ITEMS: { id: View; label: string }[] = [
-  { id: "recipes", label: "Recipes" },
-  { id: "plans", label: "Plans" },
-  { id: "shopping", label: "Shopping" },
+const NAV_ITEMS: { id: View; key: string }[] = [
+  { id: "recipes", key: "nav.recipes" },
+  { id: "plans", key: "nav.plans" },
+  { id: "shopping", key: "nav.shopping" },
 ];
 
-export default function App() {
+function AppShell() {
   const [view, setView] = useState<View>("recipes");
+  const { lang, setLang } = useLanguage();
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>FoodFlow</h1>
+        <div className="app-header-top">
+          <h1>FoodFlow</h1>
+          <select
+            className="lang-selector"
+            value={lang}
+            onChange={(e) => setLang(e.target.value as "en" | "es")}
+            aria-label="Language"
+          >
+            <option value="en">English</option>
+            <option value="es">Espa&#241;ol</option>
+          </select>
+        </div>
         <nav className="app-nav">
           {NAV_ITEMS.map((item) => (
             <button
@@ -25,7 +38,7 @@ export default function App() {
               className={`nav-button${view === item.id ? " active" : ""}`}
               onClick={() => setView(item.id)}
             >
-              {item.label}
+              {t(lang, item.key)}
             </button>
           ))}
         </nav>
@@ -36,5 +49,13 @@ export default function App() {
         {view === "shopping" && <ShoppingListView />}
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppShell />
+    </LanguageProvider>
   );
 }

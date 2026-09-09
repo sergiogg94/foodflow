@@ -8,6 +8,7 @@ import {
   updateRecipe,
 } from "../api/recipes";
 import type { Recipe, RecipeSummary } from "../api/types";
+import { useLanguage, t, pluralize } from "../i18n";
 
 interface RecipeFormState {
   name: string;
@@ -17,6 +18,7 @@ interface RecipeFormState {
 const EMPTY_FORM: RecipeFormState = { name: "", ingredients: [] };
 
 export default function RecipesView() {
+  const { lang } = useLanguage();
   const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
   const [filter, setFilter] = useState("");
   const [form, setForm] = useState<RecipeFormState>(EMPTY_FORM);
@@ -30,11 +32,11 @@ export default function RecipesView() {
     try {
       setRecipes(await listRecipes(filter || undefined));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load recipes");
+      setError(e instanceof Error ? e.message : t(lang, "recipes.error_load"));
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, lang]);
 
   useEffect(() => {
     refresh();
@@ -54,7 +56,7 @@ export default function RecipesView() {
       setEditingId(null);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to save recipe");
+      setError(e instanceof Error ? e.message : t(lang, "recipes.error_save"));
     }
   };
 
@@ -65,12 +67,12 @@ export default function RecipesView() {
       setEditingId(id);
       setForm({ name: recipe.name, ingredients: recipe.ingredients });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load recipe");
+      setError(e instanceof Error ? e.message : t(lang, "recipes.error_load_one"));
     }
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!window.confirm(`Delete recipe "${name}"?`)) return;
+    if (!window.confirm(t(lang, "recipes.confirm_delete", { name }))) return;
     setError(null);
     try {
       await deleteRecipe(id);
@@ -80,7 +82,7 @@ export default function RecipesView() {
       }
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to delete recipe");
+      setError(e instanceof Error ? e.message : t(lang, "recipes.error_delete"));
     }
   };
 
@@ -105,13 +107,13 @@ export default function RecipesView() {
 
   return (
     <section className="view">
-      <h2>Recipes</h2>
+      <h2>{t(lang, "recipes.heading")}</h2>
       {error && <p className="error">{error}</p>}
 
       <form className="card" onSubmit={handleSubmit}>
-        <h3>{editingId === null ? "New recipe" : "Edit recipe"}</h3>
+        <h3>{editingId === null ? t(lang, "recipes.new_recipe") : t(lang, "recipes.edit_recipe")}</h3>
         <label>
-          Name
+          {t(lang, "recipes.name_label")}
           <input
             type="text"
             value={form.name}
@@ -120,21 +122,21 @@ export default function RecipesView() {
           />
         </label>
         <div className="ingredient-list">
-          <span className="label">Ingredients (optional)</span>
+          <span className="label">{t(lang, "recipes.ingredients_label")}</span>
           {form.ingredients.map((ingredient, index) => (
             <div className="ingredient-row" key={index}>
               <input
                 type="text"
                 value={ingredient}
                 onChange={(e) => updateIngredient(index, e.target.value)}
-                placeholder="Ingredient name"
+                placeholder={t(lang, "recipes.ingredient_placeholder")}
               />
               <button
                 type="button"
                 className="button-secondary"
                 onClick={() => removeIngredientRow(index)}
               >
-                Remove
+                {t(lang, "recipes.remove")}
               </button>
             </div>
           ))}
@@ -143,12 +145,12 @@ export default function RecipesView() {
             className="button-secondary"
             onClick={addIngredientRow}
           >
-            Add ingredient
+            {t(lang, "recipes.add_ingredient")}
           </button>
         </div>
         <div className="form-actions">
           <button type="submit" className="button-primary">
-            {editingId === null ? "Create recipe" : "Save changes"}
+            {editingId === null ? t(lang, "recipes.create") : t(lang, "recipes.save")}
           </button>
           {editingId !== null && (
             <button
@@ -159,7 +161,7 @@ export default function RecipesView() {
                 setForm(EMPTY_FORM);
               }}
             >
-              Cancel
+              {t(lang, "recipes.cancel")}
             </button>
           )}
         </div>
@@ -167,20 +169,20 @@ export default function RecipesView() {
 
       <div className="card">
         <label>
-          Search
+          {t(lang, "recipes.search_label")}
           <input
             type="search"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter by name"
+            placeholder={t(lang, "recipes.filter_placeholder")}
           />
         </label>
-        {loading && <p>Loading…</p>}
+        {loading && <p>{t(lang, "recipes.loading")}</p>}
         {!loading && recipes.length === 0 && (
           <p className="empty-state">
             {filter
-              ? "No recipes match your search."
-              : "No recipes yet. Create your first recipe above."}
+              ? t(lang, "recipes.empty_search")
+              : t(lang, "recipes.empty_list")}
           </p>
         )}
         <ul className="recipe-list">
@@ -189,8 +191,12 @@ export default function RecipesView() {
               <div className="recipe-info">
                 <span className="recipe-name">{recipe.name}</span>
                 <span className="recipe-count">
-                  {recipe.ingredient_count} ingredient
-                  {recipe.ingredient_count === 1 ? "" : "s"}
+                  {recipe.ingredient_count}{" "}
+                  {pluralize(
+                    recipe.ingredient_count,
+                    t(lang, "recipes.ingredient_singular"),
+                    t(lang, "recipes.ingredient_plural"),
+                  )}
                 </span>
               </div>
               <div className="recipe-actions">
@@ -198,13 +204,13 @@ export default function RecipesView() {
                   className="button-secondary"
                   onClick={() => handleEdit(recipe.id)}
                 >
-                  Edit
+                  {t(lang, "recipes.edit")}
                 </button>
                 <button
                   className="button-danger"
                   onClick={() => handleDelete(recipe.id, recipe.name)}
                 >
-                  Delete
+                  {t(lang, "recipes.delete")}
                 </button>
               </div>
             </li>
