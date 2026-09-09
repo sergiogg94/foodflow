@@ -145,9 +145,4 @@ const translations = {
   },
 } as const;
 
-export type Namespace = keyof typeof translations["en"];
-export type TranslationKey = {
-  [NS in Namespace]: keyof (typeof translations["en"])[NS];
-};
-
 export { translations };
