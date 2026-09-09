@@ -51,7 +51,7 @@ Final state of every acceptance criterion, consolidating the test reports and th
 ## Linked pull requests
 
 - **PR #1** — FoodFlow core implementation (branch `feat/meal-planner-core`), merged as `f830444`.
-- **PR #2** — CI workflow (branch `ci/opencode-review-workflow`), merged as `64e4546`. Adds `.github/workflows/opencode-review.yml`, `.github/workflows/ci-baseline.yml`, and `.opencode/agent/ci-review.md`. `ci-baseline.yml` is a scaffold that intentionally does nothing yet.
+- **PR #2** — CI workflow (branch `ci/opencode-review-workflow`), merged as `64e4546`. Originally added `.github/workflows/opencode-review.yml` and `.opencode/agent/ci-review.md` (both since removed in PR #4 due to opencode CI permission hang; see `docs/notes/2026-09-09_ci-review-permissions-fix.md`). Also added `.github/workflows/ci-baseline.yml`, a scaffold that intentionally does nothing yet.
 
 ---
 
