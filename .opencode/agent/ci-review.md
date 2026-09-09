@@ -3,6 +3,19 @@ description: Non-interactive review agent for the opencode-review GitHub Actions
 mode: primary
 permission:
   "*": allow
+  bash: allow
+  edit: allow
+  read: allow
+  glob: allow
+  grep: allow
+  webfetch: allow
+  websearch: allow
+  task: allow
+  skill: allow
+  lsp: allow
+  question: allow
+  external_directory: deny
+  doom_loop: deny
 ---
 
 # CI Review

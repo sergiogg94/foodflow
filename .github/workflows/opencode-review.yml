@@ -33,9 +33,11 @@ jobs:
       - name: Run OpenCode review
         uses: anomalyco/opencode/github@latest
         env:
-          # CI is non-interactive: auto-approve permission requests so the agent
-          # does not hang on bash/tool prompts.
-          OPENCODE_PERMISSION: '{"*": "allow"}'
+          # CI is non-interactive: auto-approve all tool permissions so the agent
+          # does not hang on bash/tool prompts. Explicit per-tool entries ensure
+          # reliability across opencode versions; external_directory and doom_loop
+          # are denied because the agent only reads files and returns text.
+          OPENCODE_PERMISSION: '{"*": "allow", "bash": "allow", "edit": "allow", "read": "allow", "glob": "allow", "grep": "allow", "question": "allow", "external_directory": "deny", "doom_loop": "deny"}'
           GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
