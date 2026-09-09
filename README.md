@@ -9,11 +9,12 @@ FoodFlow is a self-hosted weekly meal planner for two people who share a single 
 - **Shopping list** — select one or more plans and get a flat, deduplicated list of ingredient names, sorted alphabetically. An ingredient shared by several recipes appears only once. The list reflects the selected plans as they are edited.
 - **"No ingredients" tag** — a recipe without ingredients is marked with a "no ingredients" tag in a plan view and contributes nothing to the shopping list.
 - **Recipe uniqueness per plan** — each recipe appears at most once per plan; adding a recipe that is already in the plan is silently ignored (ADR-5).
+- **Language switch (English ↔ Spanish)** — a selector in the app header toggles the interface between English and Spanish. All UI strings (navigation, headings, labels, buttons, placeholders, empty states, tags, confirmations, and pluralized counts) render in the selected language. The choice persists per device via `localStorage` and defaults to English. User-created data (recipe names, ingredient names, plan names) is never translated (ADR-6).
 
 ## Stack
 
 - **Backend** — FastAPI with SQLAlchemy 2.0 over SQLite. Four tables (`recipes`, `recipe_ingredients`, `plans`, `plan_meals`); WAL mode, busy timeout, and foreign keys enabled.
-- **Frontend** — Vite + React + TypeScript, mobile-first, with three views (Recipes, Plans, Shopping list), plain React state, and a typed API client.
+- **Frontend** — Vite + React + TypeScript, mobile-first, with three views (Recipes, Plans, Shopping list), plain React state, a typed API client, and hand-rolled i18n (English ↔ Spanish, ADR-6).
 - **Deployment** — a single docker-compose service. The React app is built at image build time and served by the FastAPI backend; the SQLite database is persisted on a `./data` bind mount. The app listens on port 8000.
 
 There is no authentication. The app is intended for the local network only; anyone who can reach it can read and modify the data. Concurrent edits follow a last-change-wins rule (ADR-4).
@@ -32,5 +33,5 @@ Then open `http://<host>:8000` in a browser. Data is stored in `./data/foodflow.
 
 - `docs/requirements.md` — scope, functional requirements, and acceptance criteria
 - `docs/architecture.md` — architecture summary and ADR index
-- `docs/adr/` — architecture decision records (ADR-1..ADR-5)
+- `docs/adr/` — architecture decision records (ADR-1..ADR-6)
 - `docs/delivery-checklist.md` — delivery status and open risks
