@@ -14,7 +14,7 @@ This document consolidates delivery status for all FoodFlow features.
 **Implementation notes:** `docs/notes/implementation-notes.md`, `docs/notes/2026-08-30_review-fixes-nb1-nb2-nb3.md`  
 **Test report:** `docs/tests/implementation-t1-t10.md`, `docs/tests/2026-08-30_review-fixes-nb1-nb2-nb3.md`  
 **Review report:** `docs/reviews/2026-08-30_meal-planner-core_review.md`  
-**Status:** 🟡 pending human acceptance
+**Status:** ✅ accepted
 
 ---
 
@@ -126,7 +126,7 @@ Final state of every acceptance criterion, consolidating the test reports and th
 - [x] Test suite passes; failures accounted for
 - [ ] Documentation updated or consciously deferred — NB-4 ADR status drift deferred as follow-up
 - [x] Human merges the pull request — both PRs already merged on `main` (`f830444`, `64e4546`)
-- [ ] Human accepts the delivery
+- [x] Human accepts the delivery
 
 ---
 
@@ -140,8 +140,8 @@ Upon human acceptance: move T-1..T-10 to Done — evidence: this delivery checkl
 
 ---
 
-**Accepted by:** ________________ *(human)*  
-**Acceptance date:** ________________
+**Accepted by:** human  
+**Acceptance date:** 2026-09-11
 
 ---
 
@@ -158,8 +158,8 @@ Upon human acceptance: move T-1..T-10 to Done — evidence: this delivery checkl
 **Test report:** `docs/tests/2026-09-08_language-switch.md`  
 **Review report:** `docs/reviews/2026-09-08_language-switch_review.md` (✅ approved)  
 **Branch:** `feat/language-switch`  
-**Pull request:** PR #3 (open)  
-**Status:** 🟡 pending human merge and acceptance
+**Pull request:** PR #3 (merged)  
+**Status:** ✅ accepted
 
 ---
 
@@ -203,7 +203,7 @@ Final state of every acceptance criterion, consolidating the test report and the
 
 ## Linked pull requests
 
-- **PR #3** — Frontend language switch (branch `feat/language-switch`), open. Review verdict: ✅ Approved.
+- **PR #3** — Frontend language switch (branch `feat/language-switch`), merged. Review verdict: ✅ Approved.
 
 ---
 
@@ -271,9 +271,9 @@ Final state of every acceptance criterion, consolidating the test report and the
 - [x] Build passes (`tsc` strict clean, Vite production build succeeds)
 - [x] Documentation updated
 - [x] Branch diff contains only T-1..T-6 scope (10 files, no creep)
-- [ ] Human merges PR #3
+- [x] Human merges PR #3
 - [ ] Human exercises the selector in a real browser
-- [ ] Human accepts the delivery
+- [x] Human accepts the delivery
 
 ---
 
@@ -287,5 +287,5 @@ Upon human acceptance: move T-1..T-6 to Done — evidence: this delivery checkli
 
 ---
 
-**Accepted by:** ________________ *(human)*  
-**Acceptance date:** ________________
+**Accepted by:** human  
+**Acceptance date:** 2026-09-11

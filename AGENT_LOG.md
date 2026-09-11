@@ -28,8 +28,26 @@ Decision and outcome log for FoodFlow, maintained by the orchestrator. Read befo
 - Re-review — human decided to fix only B-1 (move type to `types.ts`); developer commit `c09140b`. NB-1 and NB-3 left open by human decision. Re-review verdict: ✅ Approved (`docs/reviews/2026-09-08_language-switch_review.md`).
 - `AGENT_LOG.md` created at repo root (D-3).
 
-### Pipeline state
+### Pipeline state (updated 2026-09-11)
 
-- Stage: reviewer → awaiting human merge decision (new feature).
-- PR #3 (`feat/language-switch`) — open; review verdict ✅ Approved; B-1 resolved. Human must merge.
-- Previous delivery (T-1..T-10): merged to `main`; `docs/delivery-checklist.md` 🟡 pending human acceptance (independent of this feature).
+- PR #3 (`feat/language-switch`) — **merged** to `main` (2026-09-09).
+- Both deliveries **accepted by human** (2026-09-11):
+  - Delivery 1 (core T-1..T-10): `docs/delivery-checklist.md` ✅ accepted.
+  - Delivery 2 (language-switch T-1..T-6): `docs/delivery-checklist.md` ✅ accepted.
+- Board items #5–#20 (all 16 tasks): Status `Ready` → **human must move to `Done`** (per `github-projects-policy.md`).
+- **Pipeline complete.** No pending stages remain.
+
+---
+
+## 2026-09-11 — Delivery acceptance
+
+### Decisions
+
+- **D-4 — Delivery 1 accepted.** Human approved `docs/delivery-checklist.md` for core implementation (T-1..T-10). All 6 ACs pass (AC-1/AC-4/AC-5 UI portions accepted as ⚠️ manual checks). Zero blocking findings.
+- **D-5 — Delivery 2 accepted.** Human approved `docs/delivery-checklist.md` for frontend language switch (T-1..T-6). All 6 ACs pass (AC-1/AC-2 accepted as ⚠️ manual checks). NB-1 and NB-3 left open by human decision. PR #3 merged.
+
+### Outcomes
+
+- `docs/delivery-checklist.md` updated: both deliveries marked ✅ accepted, signed by human (2026-09-11).
+- Board sync completed: 16 issues (#5–#20) created in Project 2 with correct Priority, Effort, Issue Type, Area fields; Status set to `Ready`.
+- **Board updates pending:** human must move all 16 items from `Ready` → `Done` on Project 2.

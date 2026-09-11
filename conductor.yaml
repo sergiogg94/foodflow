@@ -100,7 +100,7 @@ github:
     fields:
       status: Status
       priority: Priority
-      type: Type
+      type: Issue Type
       area: Area
       effort: Effort
       iteration: Iteration
