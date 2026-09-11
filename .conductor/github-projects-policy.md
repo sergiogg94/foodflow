@@ -142,14 +142,35 @@ An item may be marked `Done` only when all of the following hold:
 
 ---
 
-## MVP Mode (No Live Integration Yet)
+## Live Integration via GitHub MCP
 
-Until the GitHub MCP integration is implemented, agents do not write to the board directly. Instead, each artifact ends with a short **Board Updates** section listing suggested operations:
+Board operations execute through the GitHub MCP Server when the project enables `github_mcp: true` in `conductor.yaml` and the consumer has configured a `GITHUB_TOKEN` with repo and project scopes.
 
-```md
-## Board Updates
-- Move #12 Ready → In Progress (starting implementation)
-- Set #12 Linked PR: <url>
-```
+### Execution vs Suggestion
 
-The human applies them manually or via script. The rules in this document (permissions, evidence, forbidden transitions) apply to those suggestions exactly as they will apply to automated writes later.
+- **Agents with `can_update_projects: true`** (planner, developer, devops) execute board operations via MCP tools (`mcp__github`) when the transition falls within their permission row.
+- **All other agents** continue emitting suggested operations in their `## Board updates` section. The human applies them or delegates to a permissioned agent.
+
+### MCP Operation Mapping
+
+| Board operation | MCP tool | Who may execute |
+|---|---|---|
+| Create issue | `mcp__github/issue_write`, method `create` | `planner` |
+| Add item to project | `mcp__github/projects_write`, method `add_project_item` | `planner` |
+| Set field value (Status, Priority, Effort, etc.) | `mcp__github/projects_write`, method `update_project_item`, `updated_field: {"name": "<field>", "value": <value>}` | planner, developer, devops (within role) |
+| Transition Status | `mcp__github/projects_write`, method `update_project_item`, `updated_field: {"name": "Status", "value": "<new state>"}` | per Allowed Transitions above |
+
+### Gates and Rules That Never Change
+
+The following remain enforced regardless of MCP integration:
+
+- **`Done` belongs to the human.** No agent sets Status to Done via MCP. The human applies the final transition after accepting the delivery checklist.
+- **`Blocked` and priority changes belong to the human.** Agents may create items, transition Status within their allowed rows, and set Type/Priority/Effort at creation time — but reassigning priority after creation is human-only.
+- **Evidence required.** Every MCP-backed transition must be preceded by the relevant artifact (PR link, review report, test report, or explicit human instruction) in the conversation context.
+- **Silence is not consent.** If an agent lacks permission to execute a transition, it states this in `## Board updates` — it never silently skips the evidence requirement.
+- **Forbidden transitions are forbidden.** Skipping states (`Ready → Review`, `In Progress → Done`) is never allowed, even if MCP would technically permit the write.
+- **Stale items are flagged, not silently moved.** If an item shows no activity across sessions, the agent reports this to the human rather than auto-transitioning.
+
+### Fallback: No MCP Configured
+
+If `github_mcp: false` or `GITHUB_TOKEN` is not set, all agents fall back to suggestion-only mode — the human applies operations manually.

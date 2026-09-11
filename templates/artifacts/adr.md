@@ -165,7 +165,7 @@ Format: AC-N → [how the design satisfies it]
 <!--
 Per github-projects-policy.md: architect does not change item state.
 Once the human approves this ADR, affected items become eligible to move Backlog -> Ready,
-and planning executes that transition. Normally leave the line below unchanged.
+and planning executes that transition (via MCP when github_mcp is enabled). Normally leave the line below unchanged.
 -->
 
 None — items affected by this ADR become eligible for `Ready` upon human approval; planning applies the transition.

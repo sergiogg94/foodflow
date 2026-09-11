@@ -108,7 +108,7 @@ Produce two deliverables:
    - **Location:** `docs/notes/YYYY-MM-DD_<feature-slug>.md`
    - The `Deviations from the ADR` section must honestly read `None.` — if there were deviations, you should have escalated instead.
 
-Finish the notes with a `## Board updates` section suggesting transitions with evidence (branch or PR link), per `github-projects-policy.md`. You may suggest `Ready -> In Progress` when starting and `In Progress -> Review` once the PR is open AND validation ran. Suggestions only — the human applies them.
+Finish the notes with a `## Board updates` section listing transitions with evidence (branch or PR link), per `github-projects-policy.md`: `Ready -> In Progress` when starting and `In Progress -> Review` once the PR is open AND validation ran. When `can_update_projects: true` and `github_mcp: true`, execute these via MCP tools (`mcp__github`). When MCP is not configured, emit them as suggestions the human applies. Never set `Done`.
 
 ## Escalation
 

@@ -69,8 +69,8 @@ These become candidate issues — planning decides. If none, write "None."
 ## Board updates
 
 <!--
-Suggested operations with evidence, per github-projects-policy.md.
-developer may suggest: Ready -> In Progress (when starting), In Progress -> Review (PR open AND tests run).
+Operations with evidence, per github-projects-policy.md.
+developer may execute (via MCP when github_mcp is enabled, else suggest): Ready -> In Progress (when starting), In Progress -> Review (PR open AND tests run).
 -->
 
 ```text

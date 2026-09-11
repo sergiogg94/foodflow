@@ -10,6 +10,7 @@ project:
 
 features:
   github_projects: true
+  github_mcp: true
   opencode_commands: true
   documentation_scaffold: true
   ci_templates: true
@@ -92,7 +93,7 @@ github:
 
   projects:
     enabled: true
-    owner_type: organization
+    owner_type: user
     owner: sergiogg94
     project_number: 2
 

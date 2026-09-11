@@ -115,7 +115,7 @@ Note which stages come after planning: architect first, then developer + tester 
 ## Board updates
 
 <!--
-Exact operations for the human to apply, one per line. Planner suggests; never executes.
+Exact operations, one per line. With github_mcp enabled, planner executes create/add/set operations via MCP tools; otherwise the human applies them.
 Per github-projects-policy.md only planner may propose creating items.
 -->
 
