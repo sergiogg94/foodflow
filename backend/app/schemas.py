@@ -1,5 +1,7 @@
 """Pydantic request/response schemas for the FoodFlow API."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -43,6 +45,23 @@ class RecipeSummary(BaseModel):
     id: int
     name: str
     ingredient_count: int
+
+
+class SuggestIngredientsRequest(BaseModel):
+    name: str = Field(..., min_length=1)
+    language: Literal["en", "es"]
+
+    @field_validator("name")
+    @classmethod
+    def name_not_blank(cls, value: str) -> str:
+        """Reject names that are empty or only whitespace (FR-1: non-blank)."""
+        if value.strip() == "":
+            raise ValueError("Recipe name must not be blank")
+        return value
+
+
+class SuggestIngredientsResponse(BaseModel):
+    suggestions: list[str]
 
 
 class PlanCreate(BaseModel):
