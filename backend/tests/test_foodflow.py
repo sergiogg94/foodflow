@@ -9,6 +9,7 @@ a plan are silently deduplicated (NB-2 / ADR-5).
 Run from the repository root: `python -m pytest backend/tests`.
 """
 
+import httpx
 from sqlalchemy import text
 
 
@@ -397,3 +398,194 @@ def test_add_meal_deduplicates_existing_recipe(client):
         recipe["id"],
         other["id"],
     ]
+
+
+# --- AI ingredient suggestions (T-2, ADR-7) --------------------------------
+
+
+class _FakeGeminiResponse:
+    """Minimal stand-in for httpx.Response used by the suggest-ingredients tests."""
+
+    def __init__(self, status_code=200, payload=None):
+        self.status_code = status_code
+        self._payload = payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            request = httpx.Request("POST", "http://gemini.test")
+            raise httpx.HTTPStatusError(
+                f"HTTP {self.status_code}",
+                request=request,
+                response=httpx.Response(self.status_code, request=request),
+            )
+
+    def json(self):
+        return self._payload
+
+
+class _FakeGeminiClient:
+    """Records the outgoing request and returns a canned response or raises."""
+
+    def __init__(self, response=None, error=None):
+        self.response = response
+        self.error = error
+        self.captured = {}
+
+    def post(self, url, json=None, headers=None):
+        self.captured["url"] = url
+        self.captured["json"] = json
+        self.captured["headers"] = headers
+        if self.error is not None:
+            raise self.error
+        return self.response
+
+
+def _patch_gemini_client(monkeypatch, fake):
+    monkeypatch.setattr(httpx, "Client", lambda timeout: fake)
+
+
+def test_suggest_ingredients_503_when_key_missing(client, monkeypatch):
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 503
+    assert resp.json()["detail"] == "AI suggestions are not configured"
+
+
+def test_suggest_ingredients_503_when_key_whitespace_only(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "   ")
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 503
+    assert resp.json()["detail"] == "AI suggestions are not configured"
+
+
+def test_suggest_ingredients_validation(client):
+    resp = client.post(
+        "/recipes/suggest-ingredients", json={"name": "", "language": "en"}
+    )
+    assert resp.status_code == 422
+    resp = client.post(
+        "/recipes/suggest-ingredients", json={"name": "   ", "language": "en"}
+    )
+    assert resp.status_code == 422
+    resp = client.post(
+        "/recipes/suggest-ingredients", json={"name": "Pasta", "language": "fr"}
+    )
+    assert resp.status_code == 422
+    resp = client.post("/recipes/suggest-ingredients", json={"language": "en"})
+    assert resp.status_code == 422
+
+
+def test_suggest_ingredients_success(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = _FakeGeminiClient(
+        response=_FakeGeminiResponse(
+            payload={
+                "candidates": [
+                    {"content": {"parts": [{"text": '["pasta", "eggs", "bacon"]'}]}}
+                ]
+            }
+        )
+    )
+    _patch_gemini_client(monkeypatch, fake)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 200
+    assert resp.json() == {"suggestions": ["pasta", "eggs", "bacon"]}
+
+
+def test_suggest_ingredients_502_on_gemini_http_error(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = _FakeGeminiClient(response=_FakeGeminiResponse(status_code=500, payload={}))
+    _patch_gemini_client(monkeypatch, fake)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 502
+    assert resp.json()["detail"] == "Failed to get AI suggestions"
+
+
+def test_suggest_ingredients_502_on_network_error(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = _FakeGeminiClient(error=httpx.ConnectError("connection refused"))
+    _patch_gemini_client(monkeypatch, fake)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 502
+    assert resp.json()["detail"] == "Failed to get AI suggestions"
+
+
+def test_suggest_ingredients_502_on_malformed_body(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = _FakeGeminiClient(
+        response=_FakeGeminiResponse(
+            payload={
+                "candidates": [{"content": {"parts": [{"text": "not valid json"}]}}]
+            }
+        )
+    )
+    _patch_gemini_client(monkeypatch, fake)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 502
+    assert resp.json()["detail"] == "Failed to get AI suggestions"
+
+
+def test_suggest_ingredients_502_on_unexpected_shape(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = _FakeGeminiClient(
+        response=_FakeGeminiResponse(
+            payload={
+                "candidates": [{"content": {"parts": [{"text": '{"name": "Pasta"}'}]}}]
+            }
+        )
+    )
+    _patch_gemini_client(monkeypatch, fake)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "en"},
+    )
+    assert resp.status_code == 502
+    assert resp.json()["detail"] == "Failed to get AI suggestions"
+
+
+def test_suggest_ingredients_prompt_and_request(client, monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = _FakeGeminiClient(
+        response=_FakeGeminiResponse(
+            payload={"candidates": [{"content": {"parts": [{"text": '["pasta"]'}]}}]}
+        )
+    )
+    _patch_gemini_client(monkeypatch, fake)
+    resp = client.post(
+        "/recipes/suggest-ingredients",
+        json={"name": "Pasta Carbonara", "language": "es"},
+    )
+    assert resp.status_code == 200
+    body = fake.captured["json"]
+    prompt = body["contents"][0]["parts"][0]["text"]
+    assert "Pasta Carbonara" in prompt
+    assert "Spanish" in prompt
+    assert "pantry staples" in prompt
+    assert "weekly shopping list" in prompt
+    assert body["generationConfig"]["responseMimeType"] == "application/json"
+    assert body["generationConfig"]["responseSchema"] == {
+        "type": "ARRAY",
+        "items": {"type": "STRING"},
+    }
+    assert fake.captured["headers"]["x-goog-api-key"] == "test-key"
+    assert fake.captured["url"].endswith(
+        "/v1beta/models/gemini-3.1-flash-lite:generateContent"
+    )
