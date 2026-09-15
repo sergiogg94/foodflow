@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { ApiError } from "../api/client";
 import {
   createRecipe,
   deleteRecipe,
   getRecipe,
   listRecipes,
+  suggestIngredients,
   updateRecipe,
 } from "../api/recipes";
 import type { Recipe, RecipeSummary } from "../api/types";
@@ -13,6 +15,11 @@ import { useLanguage, t, pluralize } from "../i18n";
 interface RecipeFormState {
   name: string;
   ingredients: string[];
+}
+
+interface SuggestionProposal {
+  text: string;
+  selected: boolean;
 }
 
 const EMPTY_FORM: RecipeFormState = { name: "", ingredients: [] };
@@ -25,6 +32,9 @@ export default function RecipesView() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [proposal, setProposal] = useState<SuggestionProposal[] | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -54,6 +64,8 @@ export default function RecipesView() {
       }
       setForm(EMPTY_FORM);
       setEditingId(null);
+      setProposal(null);
+      setSuggestError(null);
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t(lang, "recipes.error_save"));
@@ -66,6 +78,8 @@ export default function RecipesView() {
       const recipe: Recipe = await getRecipe(id);
       setEditingId(id);
       setForm({ name: recipe.name, ingredients: recipe.ingredients });
+      setProposal(null);
+      setSuggestError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : t(lang, "recipes.error_load_one"));
     }
@@ -79,6 +93,8 @@ export default function RecipesView() {
       if (editingId === id) {
         setEditingId(null);
         setForm(EMPTY_FORM);
+        setProposal(null);
+        setSuggestError(null);
       }
       await refresh();
     } catch (e) {
@@ -103,6 +119,69 @@ export default function RecipesView() {
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleSuggest = async () => {
+    setError(null);
+    setSuggestError(null);
+    if (form.name.trim() === "") {
+      setSuggestError(t(lang, "recipes.suggest_name_required"));
+      return;
+    }
+    setSuggesting(true);
+    try {
+      const result = await suggestIngredients(form.name.trim(), lang);
+      setProposal(result.suggestions.map((text) => ({ text, selected: true })));
+    } catch (e) {
+      if (e instanceof ApiError) {
+        if (e.status === 503) {
+          setSuggestError(t(lang, "recipes.error_suggest_not_configured"));
+        } else if (e.status === 502) {
+          setSuggestError(t(lang, "recipes.error_suggest_failed"));
+        } else {
+          setSuggestError(e.message);
+        }
+      } else {
+        setSuggestError(
+          e instanceof Error ? e.message : t(lang, "recipes.error_suggest_failed")
+        );
+      }
+    } finally {
+      setSuggesting(false);
+    }
+  };
+
+  const updateProposal = (index: number, value: string) => {
+    setProposal((prev) => {
+      if (prev === null) return prev;
+      const next = [...prev];
+      next[index] = { ...next[index], text: value };
+      return next;
+    });
+  };
+
+  const toggleProposal = (index: number) => {
+    setProposal((prev) => {
+      if (prev === null) return prev;
+      const next = [...prev];
+      next[index] = { ...next[index], selected: !next[index].selected };
+      return next;
+    });
+  };
+
+  const addProposalIngredients = () => {
+    if (proposal === null) return;
+    const selected = proposal
+      .filter((item) => item.selected)
+      .map((item) => item.text.trim())
+      .filter((text) => text !== "");
+    if (selected.length > 0) {
+      setForm((prev) => ({
+        ...prev,
+        ingredients: [...prev.ingredients, ...selected],
+      }));
+    }
+    setProposal(null);
   };
 
   return (
@@ -147,6 +226,57 @@ export default function RecipesView() {
           >
             {t(lang, "recipes.add_ingredient")}
           </button>
+          <button
+            type="button"
+            className="button-secondary suggest-button"
+            onClick={handleSuggest}
+            disabled={suggesting}
+          >
+            {t(lang, "recipes.suggest_ingredients")}
+          </button>
+          {suggesting && <p>{t(lang, "recipes.suggest_loading")}</p>}
+          {suggestError && <p className="error">{suggestError}</p>}
+          {proposal !== null && proposal.length === 0 && (
+            <div className="suggest-proposal">
+              <p className="empty-state">{t(lang, "recipes.suggest_empty")}</p>
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() => setProposal(null)}
+              >
+                {t(lang, "recipes.cancel")}
+              </button>
+            </div>
+          )}
+          {proposal !== null && proposal.length > 0 && (
+            <div className="suggest-proposal">
+              <h4>{t(lang, "recipes.suggest_proposal_heading")}</h4>
+              {proposal.map((item, index) => (
+                <div className="suggest-row" key={index}>
+                  <label className="suggest-toggle">
+                    <input
+                      type="checkbox"
+                      checked={item.selected}
+                      onChange={() => toggleProposal(index)}
+                    />
+                  </label>
+                  <input
+                    type="text"
+                    value={item.text}
+                    onChange={(e) => updateProposal(index, e.target.value)}
+                    placeholder={t(lang, "recipes.ingredient_placeholder")}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="button-primary"
+                onClick={addProposalIngredients}
+              >
+                {t(lang, "recipes.suggest_add")}
+              </button>
+            </div>
+          )}
         </div>
         <div className="form-actions">
           <button type="submit" className="button-primary">
@@ -159,6 +289,8 @@ export default function RecipesView() {
               onClick={() => {
                 setEditingId(null);
                 setForm(EMPTY_FORM);
+                setProposal(null);
+                setSuggestError(null);
               }}
             >
               {t(lang, "recipes.cancel")}
