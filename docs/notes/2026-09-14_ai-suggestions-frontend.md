@@ -71,10 +71,10 @@ None.
 Move #23 ([AI suggestions] T-3) Ready -> In Progress — evidence: branch feat/ai-suggestions-frontend
 Move #25 ([AI suggestions] T-5) Ready -> In Progress — evidence: branch feat/ai-suggestions-frontend
 Move #24 ([AI suggestions] T-4) Ready -> In Progress — evidence: branch feat/ai-suggestions-frontend
-Move #23 ([AI suggestions] T-3) In Progress -> Review — evidence: PR <url>, build passed
-Move #25 ([AI suggestions] T-5) In Progress -> Review — evidence: PR <url>, build passed
-Move #24 ([AI suggestions] T-4) In Progress -> Review — evidence: PR <url>, build passed
-Set Linked PR on #23, #24, #25 — evidence: PR <url> (Closes #23, Closes #24, Closes #25)
+Move #23 ([AI suggestions] T-3) In Progress -> Review — evidence: PR https://github.com/sergiogg94/foodflow/pull/29, build passed
+Move #25 ([AI suggestions] T-5) In Progress -> Review — evidence: PR https://github.com/sergiogg94/foodflow/pull/29, build passed
+Move #24 ([AI suggestions] T-4) In Progress -> Review — evidence: PR https://github.com/sergiogg94/foodflow/pull/29, build passed
+Set Linked PR on #23, #24, #25 — evidence: PR https://github.com/sergiogg94/foodflow/pull/29 (Closes #23, Closes #24, Closes #25)
 ```
 
 ---
