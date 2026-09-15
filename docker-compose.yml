@@ -10,3 +10,7 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+    # GOOGLE_API_KEY flows host .env -> container environment -> backend
+    # endpoint (NFR-1). Never hardcode a value here; see .env.example.
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}

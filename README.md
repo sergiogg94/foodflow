@@ -29,6 +29,20 @@ docker compose up -d --build
 
 Then open `http://<host>:8000` in a browser. Data is stored in `./data/foodflow.db` and survives container recreation.
 
+### AI ingredient suggestions (optional)
+
+The "Suggest ingredients" button in the recipe form calls Google AI Studio (Gemini) through the backend endpoint `POST /recipes/suggest-ingredients`. The API key is read server-side from the `GOOGLE_API_KEY` environment variable and is never exposed to the frontend or committed to the repository (NFR-1).
+
+To enable the feature:
+
+1. Create a `.env` file in the repository root (it is gitignored, `.gitignore:15` — never commit it):
+   ```bash
+   GOOGLE_API_KEY=<your-key>
+   ```
+2. `docker compose up -d --build` picks the key up automatically; docker-compose passes it to the container via the `env` section in `docker-compose.yml`.
+
+If `GOOGLE_API_KEY` is not set, the endpoint returns HTTP 503 with detail `"AI suggestions are not configured"` and the form shows the corresponding error message. The rest of the app works normally without the key.
+
 ## Documentation
 
 - `docs/requirements.md` — scope, functional requirements, and acceptance criteria
