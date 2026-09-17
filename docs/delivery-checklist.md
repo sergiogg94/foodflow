@@ -289,3 +289,160 @@ Upon human acceptance: move T-1..T-6 to Done — evidence: this delivery checkli
 
 **Accepted by:** human  
 **Acceptance date:** 2026-09-11
+
+---
+
+# Delivery 3: AI ingredient suggestions (T-1..T-6)
+
+**Date:** 2026-09-17  
+**Project:** FoodFlow  
+**Requested by:** human  
+**Tasks:** T-1..T-6  
+**Requirements:** `docs/requirements-ai-suggestions.md` (✅ approved)  
+**Implementation plan:** `docs/implementation-plan-ai-suggestions.md` (✅ approved)  
+**Architecture decision:** `docs/adr/2026-09-14_backend-http-client-for-gemini.md` — ADR-7 (✅ approved)  
+**Implementation notes:** `docs/notes/2026-09-14_ai-suggestions-backend.md`, `docs/notes/2026-09-14_ai-suggestions-frontend.md`, `docs/notes/2026-09-15_ai-suggestions-devops.md`  
+**Test report:** `docs/tests/2026-09-17_ai-suggestions-full.md`  
+**Review report:** `docs/reviews/2026-09-17_ai-suggestions-full_review.md` (✅ approved)  
+**Branch:** `main` (PRs #27, #28, #29 merged)  
+**Status:** ✅ pending human acceptance
+
+---
+
+## Scope delivered
+
+- **POST /recipes/suggest-ingredients backend endpoint (T-1, T-2)** — **delivered**: `httpx==0.28.1` added to `backend/requirements.txt`; endpoint at `backend/app/routes/recipes.py:56-107` reads `GOOGLE_API_KEY` from the environment, calls Gemini (`gemini-3.1-flash-lite`) synchronously via a per-request `httpx.Client` with 30.0s timeout, parses the JSON array response, and returns `{"suggestions": [...]}`. HTTP 503 when the key is missing/empty; HTTP 502 on any Gemini failure. Request/response schemas in `backend/app/schemas.py:50-64`. 9 new tests in `backend/tests/test_foodflow.py:447-591`.
+- **Frontend API client (T-3)** — **delivered**: `suggestIngredients(name, language)` in `frontend/src/api/recipes.ts:28-33` with typed response `SuggestIngredientsResponse` in `frontend/src/api/types.ts:29-31`.
+- **Suggest button and proposal UI (T-4)** — **delivered**: button with `disabled={suggesting}` and loading text in `frontend/src/views/RecipesView.tsx:229-237`; editable proposal list with selected-by-default toggles at `:251-279`; `addProposalIngredients` at `:172-185` appends only selected suggestions; 503/502 error mapping at `:136-143`. Button appears in both create and edit modes (`:192-300`). Styles at `frontend/src/styles/global.css:236-270`.
+- **i18n keys (T-5)** — **delivered**: 8 en keys at `frontend/src/i18n/translations.ts:34-41`, 8 es keys at `:114-121`. No new npm dependencies (NFR-2).
+- **DevOps / API key wiring (T-6)** — **delivered**: `docker-compose.yml:15-16` passes `GOOGLE_API_KEY` through the `environment` section; `.env.example` committed with variable name only; `README.md` documents the setup.
+
+---
+
+## Requirements reference
+
+Final state of every acceptance criterion, consolidating the test report and the review cross-check. Statuses: ✅ Pass · ⚠️ Needs manual check
+
+| AC | Final status | Evidence |
+|---|---|---|
+| AC-1 | ✅ Pass — button interaction ⚠️ manual check | Button + loading + proposal list verified by code inspection and build (`RecipesView.tsx:229-279`). Live browser interaction (clicking, toggling, appending) remains a manual check. |
+| AC-2 | ✅ Pass | `addProposalIngredients` (`RecipesView.tsx:172-185`): filters `item.selected`, trims, drops blanks, appends only selected suggestions, dismisses proposal. |
+| AC-3 | ✅ Pass | Backend 503 verified live (missing key → 503); tests `test_suggest_ingredients_503_when_key_missing` and `_503_when_key_whitespace_only`. Frontend maps 503 → `recipes.error_suggest_not_configured`. No Gemini call made (503 raised before httpx). |
+| AC-4 | ✅ Pass | Live: invalid key → 502; Gemini intermittent 503 → 502. Tests: `_502_on_gemini_http_error`, `_502_on_network_error`, `_502_on_malformed_body`, `_502_on_unexpected_shape`. Frontend maps 502 → `recipes.error_suggest_failed`. |
+| AC-5 | ✅ Pass | `suggesting` flag set true at `RecipesView.tsx:131`, cleared in `finally` at `:150`; button `disabled={suggesting}` at `:233`. |
+| AC-6 | ✅ Pass | Live end-to-end: `language: "es"` → genuinely Spanish suggestions. Backend prompt uses `language_name = "Spanish"` at `recipes.py:73`. Test `test_suggest_ingredients_prompt_and_request` asserts `"Spanish"` in the prompt. |
+
+---
+
+## Implementation reference
+
+- **Branches:** `feat/ai-ingredient-suggestions` (PR #27), `feat/ai-suggestions-devops` (PR #28), `feat/ai-suggestions-frontend` (PR #29)
+- **Pull requests:** PR #27 (T-1, T-2) merged as `b6cffee`; PR #28 (T-6) merged as `41b3e1c`; PR #29 (T-3, T-4, T-5) merged as `d125581`
+- **Files changed:** PR #27: 5 files (+365/-5); PR #28: 4 files (+87/-1); PR #29: 6 files (+280/-1)
+- **Build:** `npm run build` in `frontend/` — `tsc` clean, Vite production build passes
+- **No scope creep:** all diffs contain exactly the approved task files
+
+---
+
+## Linked pull requests
+
+- **PR #27** — T-1, T-2: httpx dependency + suggest-ingredients endpoint (branch `feat/ai-ingredient-suggestions`), merged as `b6cffee`.
+- **PR #28** — T-6: GOOGLE_API_KEY deployment documentation (branch `feat/ai-suggestions-devops`), merged as `41b3e1c`.
+- **PR #29** — T-3, T-4, T-5: frontend API client, button + proposal UI, i18n keys (branch `feat/ai-suggestions-frontend`), merged as `d125581`.
+
+---
+
+## Review status
+
+- **Verdict:** ✅ Approved
+- **Blocking findings:** 0
+- **Report:** `docs/reviews/2026-09-17_ai-suggestions-full_review.md`
+
+| Finding | Status | Notes |
+|---|---|---|
+| NB-1 — array of non-strings → HTTP 500 instead of 502 (`recipes.py:105`) | 🟡 Accepted as-is (human decision) | Gap between requirements edge case and ADR-7 contract; low likelihood in practice (responseSchema constrains Gemini to strings). |
+| NB-2 — empty `candidates` array → uncaught `IndexError` → HTTP 500 (`recipes.py:101`) | 🟡 Accepted as-is (human decision) | Same class as NB-1: ADR-7 contract matches implementation, requirements edge case expects 502. |
+| NB-3 — README references non-existent `env` section (`README.md:42`) | 🟢 Resolved | Fixed in doc-alignment commit; follow-up issue #30 created for tracking. |
+
+---
+
+## Test status
+
+- **Results:** 41 passed · 0 failed · 0 skipped (backend); frontend `npm run build` passed (tsc + vite)
+- **Live Gemini:** 13 attempts — 11× 200, 2× 502 (Gemini intermittent 503 "high demand"). Spanish output verified end-to-end.
+- **DevOps:** `docker compose config` parses; `GOOGLE_API_KEY` resolves non-empty (length 53) into the `foodflow` service; container has the key set.
+- **AC coverage:** all 6 ACs verified (code inspection + build + live Gemini). Live browser interaction remains a manual check.
+- **Defects:** NB-1 (array of non-strings → 500, accepted as-is by human).
+
+---
+
+## Documentation status
+
+- `README.md` — updated: AI ingredient suggestions section added (NB-3 `env`→`environment` fix included in doc-alignment commit).
+- `docs/delivery-checklist.md` — updated (this delivery).
+- `docs/requirements-ai-suggestions.md` — ✅ approved (status header aligned).
+- `docs/implementation-plan-ai-suggestions.md` — ✅ approved (status header aligned).
+- `docs/adr/2026-09-14_backend-http-client-for-gemini.md` (ADR-7) — ✅ approved (approval fields aligned).
+- `docs/architecture.md` — ADR-7 row updated to ✅ approved in both ADR tables.
+- `AGENT_LOG.md` — updated with this session's outcomes.
+
+---
+
+## Open risks
+
+- **NB-1 / NB-2** — malformed Gemini responses return HTTP 500 instead of 502. Accepted as-is by human decision. Low likelihood in practice; `responseSchema` constrains Gemini to strings. Follow-up if desired.
+- **Live browser interaction** — the button/proposal flow (clicking, loading indicator, toggling, editing, appending, dismissing) cannot be exercised without a headless browser. Requires manual human confirmation.
+- **No automated frontend tests** — no test framework in `frontend/package.json`. The `suggestIngredients`, `handleSuggest`, `addProposalIngredients`, and i18n keys cannot be exercised by automated tests without adding a test runner.
+
+---
+
+## Deployment notes
+
+- Single docker-compose service: `docker compose up -d --build`, then open `http://<host>:8000`.
+- For AI suggestions: create `.env` with `GOOGLE_API_KEY=<your-key>`; docker-compose passes it to the container via the `environment` section.
+- If `GOOGLE_API_KEY` is not set, the endpoint returns HTTP 503 and the rest of the app works normally.
+
+---
+
+## Rollback notes
+
+- Reverting merge commits `b6cffee` (PR #27), `41b3e1c` (PR #28), and `d125581` (PR #29) removes the AI suggestions feature. The core app and language switch remain functional.
+
+---
+
+## Follow-up work
+
+- NB-1/NB-2: optionally fix malformed-Gemini-response error handling (add `ValidationError`/`IndexError` to except clause or validate response shape before indexing).
+- NB-3 follow-up issue #30: README `env`→`environment` fix included in doc-alignment commit; human closes issue when satisfied.
+- Manual browser validation of button click, loading indicator, toggling, editing, appending, and error messages (human).
+- Add a frontend test framework for automated testing of the suggest flow.
+
+---
+
+## Final checklist
+
+- [x] Review verdict: ✅ Approved
+- [x] Zero 🔴 blocking findings unresolved
+- [ ] All ACs ✅ or explicitly accepted as ⚠️ manual checks — AC-1 button interaction needs manual browser confirmation
+- [x] Test suite passes; 41 backend tests, 0 failed
+- [x] Build passes (tsc strict clean, Vite production build succeeds)
+- [x] Documentation updated
+- [x] Branch diffs contain only T-1..T-6 scope (no creep)
+- [x] Human merges PRs #27, #28, #29
+- [ ] Human exercises the suggest button in a real browser
+- [ ] Human accepts the delivery
+
+---
+
+## Board updates
+
+Per `github-projects-policy.md`: only the human marks items Done. This checklist proposes; the human disposes.
+
+```text
+Upon human acceptance: move #21 (T-1), #22 (T-2), #23 (T-3), #24 (T-4), #25 (T-5), #26 (T-6) to Done — evidence: this delivery checklist + merged PR #27 (b6cffee) + PR #28 (41b3e1c) + PR #29 (d125581)
+```
+
+---
+
+**Accepted by:** ________________ *(human)*  
+**Acceptance date:** ________________

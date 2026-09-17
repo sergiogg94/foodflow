@@ -39,7 +39,7 @@ To enable the feature:
    ```bash
    GOOGLE_API_KEY=<your-key>
    ```
-2. `docker compose up -d --build` picks the key up automatically; docker-compose passes it to the container via the `env` section in `docker-compose.yml`.
+2. `docker compose up -d --build` picks the key up automatically; docker-compose passes it to the container via the `environment` section in `docker-compose.yml`.
 
 If `GOOGLE_API_KEY` is not set, the endpoint returns HTTP 503 with detail `"AI suggestions are not configured"` and the form shows the corresponding error message. The rest of the app works normally without the key.
 
