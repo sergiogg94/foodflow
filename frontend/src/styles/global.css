@@ -233,6 +233,42 @@ input[type="search"] {
   flex: 1;
 }
 
+.suggest-button {
+  display: block;
+  margin-top: 8px;
+}
+
+.suggest-proposal {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.suggest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.suggest-row input[type="text"] {
+  flex: 1;
+  margin-top: 0;
+}
+
+.suggest-toggle {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-weight: 400;
+}
+
+.suggest-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
 .form-actions {
   display: flex;
   gap: 8px;

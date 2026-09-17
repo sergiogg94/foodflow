@@ -1,5 +1,5 @@
 import { del, get, patch, post } from "./client";
-import type { Recipe, RecipeSummary } from "./types";
+import type { Recipe, RecipeSummary, SuggestIngredientsResponse } from "./types";
 
 export function listRecipes(filter?: string): Promise<RecipeSummary[]> {
   const query = filter ? `?filter=${encodeURIComponent(filter)}` : "";
@@ -23,4 +23,11 @@ export function updateRecipe(
 
 export function deleteRecipe(id: number): Promise<void> {
   return del<void>(`/recipes/${id}`);
+}
+
+export function suggestIngredients(
+  name: string,
+  language: "en" | "es"
+): Promise<SuggestIngredientsResponse> {
+  return post<SuggestIngredientsResponse>("/recipes/suggest-ingredients", { name, language });
 }

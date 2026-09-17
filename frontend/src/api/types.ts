@@ -25,3 +25,7 @@ export interface Plan {
 export interface ShoppingList {
   ingredients: string[];
 }
+
+export interface SuggestIngredientsResponse {
+  suggestions: string[];
+}
