@@ -6,7 +6,7 @@ temperature: 0.1
 steps: 30
 permission:
   edit: allow
-  bash: ask
+  bash: allow
   webfetch: deny
   task: deny
 ---
